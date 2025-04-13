@@ -7,8 +7,7 @@
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
-      videoLabel(new QLabel(this)),
-      timer(new QTimer(this))
+      videoLabel(new QLabel(this))
 {
     setWindowTitle("FireFly");
     resize(800, 600);
@@ -35,7 +34,7 @@ void MainWindow::initialize() {
 }
 
 void MainWindow::start() {
-    timer->start(30);  // ~33 FPS
+    QTimer::singleShot(0, this, &MainWindow::updateFrame);
 }
 
 void MainWindow::updateFrame() {
@@ -47,4 +46,5 @@ void MainWindow::updateFrame() {
     cv::cvtColor(output, output, cv::COLOR_BGR2RGB);
     QImage img(output.data, output.cols, output.rows, output.step, QImage::Format_RGB888);
     videoLabel->setPixmap(QPixmap::fromImage(img));
+    QTimer::singleShot(0, this, &MainWindow::updateFrame);
 }
