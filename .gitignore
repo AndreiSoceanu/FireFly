@@ -1,0 +1,21 @@
+# Build system
+build/
+bin/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Qt/IDE/VSCode
+.vscode/
+*.user
+*.pro.user
+
+# Backup and OS clutter
+*.swp
+*.swo
+*.bak
+.DS_Store
+
+# Model weights (if ever added)
+Resources/models/**/*.weights

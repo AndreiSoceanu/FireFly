@@ -1,0 +1,11 @@
+#!/bin/bash
+cd "$(dirname "$0")/../../"
+
+EXEC="./bin/FireFlyApp"
+
+if [ -f "$EXEC" ]; then
+    echo "🚀 Running FireFly..."
+    $EXEC
+else
+    echo "❌ Executable not found! Run ./src/scripts/build.sh first."
+fi

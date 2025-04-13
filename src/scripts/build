@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+cd "$(dirname "$0")/../../"
+
+echo "🛠️ Building FireFly..."
+mkdir -p build
+cd build
+cmake ..
+cmake --build .
+echo "✅ Build finished!"
