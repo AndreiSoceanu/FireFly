@@ -22,7 +22,13 @@ bool Capture::initialize() {
         cap.open(path.toStdString());
         ready = cap.isOpened();
     } else if (mode == "webcam") {
-        cap.open(cameraId);
+        cap.open(cameraId, cv::CAP_V4L2);
+        if (cap.isOpened()) {
+            int w = AppConfig::instance().value("display/width", 640).toInt();
+            int h = AppConfig::instance().value("display/height", 480).toInt();
+            cap.set(cv::CAP_PROP_FRAME_WIDTH, w);
+            cap.set(cv::CAP_PROP_FRAME_HEIGHT, h);
+        }
         ready = cap.isOpened();
     } else {
         ready = false;

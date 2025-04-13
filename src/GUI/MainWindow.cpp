@@ -10,10 +10,11 @@ MainWindow::MainWindow(QWidget* parent)
       videoLabel(new QLabel(this))
 {
     setWindowTitle("FireFly");
-    resize(800, 600);
+    // resize(800, 600);
+    videoLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     videoLabel->setAlignment(Qt::AlignCenter);
-    videoLabel->setMinimumSize(640, 480);
+    // videoLabel->setMinimumSize(640, 480);
 
     QWidget* central = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(central);
@@ -30,8 +31,21 @@ MainWindow& MainWindow::instance() {
 }
 
 void MainWindow::initialize() {
-    // Capture and Processor should already be initialized externally
+    // Prime the camera — get a valid first frame
+    cv::Mat frame;
+    for (int i = 0; i < 5; ++i) {  // Try a few times, just in case
+        frame = Capture::instance().getFrame();
+        if (!frame.empty()) break;
+    }
+
+    if (!frame.empty()) {
+        resize(frame.cols, frame.rows + 40); // Resize main window
+        videoLabel->setFixedSize(frame.cols, frame.rows);
+    } else {
+        qWarning("⚠️ Failed to grab initial frame for layout");
+    }
 }
+
 
 void MainWindow::start() {
     QTimer::singleShot(0, this, &MainWindow::updateFrame);
