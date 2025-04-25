@@ -51,7 +51,7 @@ void MainWindow::start() {
         return;
     }
 
-    QString mode = AppConfig::instance().value("mode/type").toString();
+    QString mode = AppConfig::instance().get_mode();
 
     if (mode == "image") {
         updateFrame();  // just display once

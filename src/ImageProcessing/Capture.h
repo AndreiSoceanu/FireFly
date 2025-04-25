@@ -18,6 +18,8 @@ private:
     QString path;
     bool loop = false;
     int cameraId = 0;
+    int width = 640;
+    int height = 480;
 
     bool ready = false;
 

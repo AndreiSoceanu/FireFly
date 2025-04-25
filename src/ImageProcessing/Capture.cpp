@@ -4,10 +4,12 @@
 #include <opencv2/opencv.hpp>
 
 Capture::Capture() {
-    mode = AppConfig::instance().value("mode/type").toString();
-    path = AppConfig::instance().value("mode/path").toString();
-    loop = AppConfig::instance().value("video/loop", true).toBool();
-    cameraId = AppConfig::instance().value("camera/id", 0).toInt();
+    mode = AppConfig::instance().get_mode();
+    path = AppConfig::instance().get_path();
+    loop = AppConfig::instance().get_loop();
+    cameraId = AppConfig::instance().get_cameraId();
+    width = AppConfig::instance().get_width();
+    height = AppConfig::instance().get_height();
 }
 
 Capture& Capture::instance() {
@@ -22,10 +24,7 @@ bool Capture::initialize() {
             qWarning() << "❌ Could not load image from path:" << path;
             ready = false;
         } else {
-            int w = AppConfig::instance().value("display/width", 640).toInt();
-            int h = AppConfig::instance().value("display/height", 480).toInt();
-            cv::resize(image, image, cv::Size(w, h));
-
+            cv::resize(image, image, cv::Size(width, height));
             ready = true;
             qDebug() << "✅ Loaded image:" << path;
         }
@@ -36,17 +35,14 @@ bool Capture::initialize() {
             qWarning() << "❌ Failed to open video file:" << path;
             ready = false;
         } else {
-            int w = AppConfig::instance().value("display/width", 640).toInt();
-            int h = AppConfig::instance().value("display/height", 480).toInt();
-
             // Read a dummy frame to enforce resolution
             cv::Mat dummy;
             cap.read(dummy);
             cap.set(cv::CAP_PROP_POS_FRAMES, 0);  // rewind to start
 
             if (!dummy.empty()) {
-                cv::resize(dummy, dummy, cv::Size(w, h));
-                qDebug() << "✅ Video resolution set to" << w << "x" << h;
+                cv::resize(dummy, dummy, cv::Size(width, height));
+                qDebug() << "✅ Video resolution set to" << width << "x" << height;
             }
             ready = true;
             qDebug() << "✅ Opened video:" << path;
@@ -55,10 +51,8 @@ bool Capture::initialize() {
     } else if (mode == "webcam") {
         cap.open(cameraId, cv::CAP_V4L2);  // Use V4L2 for Linux
         if (cap.isOpened()) {
-            int w = AppConfig::instance().value("display/width", 640).toInt();
-            int h = AppConfig::instance().value("display/height", 480).toInt();
-            cap.set(cv::CAP_PROP_FRAME_WIDTH, w);
-            cap.set(cv::CAP_PROP_FRAME_HEIGHT, h);
+            cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
+            cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
         }
 
         if (!cap.isOpened()) {
