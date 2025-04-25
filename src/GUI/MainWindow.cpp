@@ -1,25 +1,24 @@
 #include "MainWindow.h"
+#include "AppConfig.h"
 #include "Capture.h"
 #include "Processor.h"
 
+#include <QVBoxLayout>
+#include <QDebug>
 #include <QImage>
 #include <QPixmap>
 
-MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent),
-      videoLabel(new QLabel(this))
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent), videoLabel(new QLabel(this)), timer(new QTimer(this))
 {
     setWindowTitle("FireFly");
-    // resize(800, 600);
-    videoLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     videoLabel->setAlignment(Qt::AlignCenter);
-    // videoLabel->setMinimumSize(640, 480);
+    videoLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     QWidget* central = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(central);
     layout->addWidget(videoLabel);
-    central->setLayout(layout);
     setCentralWidget(central);
 
     connect(timer, &QTimer::timeout, this, &MainWindow::updateFrame);
@@ -31,34 +30,49 @@ MainWindow& MainWindow::instance() {
 }
 
 void MainWindow::initialize() {
-    // Prime the camera — get a valid first frame
-    cv::Mat frame;
-    for (int i = 0; i < 5; ++i) {  // Try a few times, just in case
-        frame = Capture::instance().getFrame();
-        if (!frame.empty()) break;
+    if (!Capture::instance().isReady()) {
+        qCritical("❌ Capture not ready during MainWindow::initialize");
+        return;
     }
 
-    if (!frame.empty()) {
-        resize(frame.cols, frame.rows + 40); // Resize main window
-        videoLabel->setFixedSize(frame.cols, frame.rows);
+    // Try to grab a first frame to determine size
+    cv::Mat first = Capture::instance().getFrame();
+    if (!first.empty()) {
+        videoLabel->setFixedSize(first.cols, first.rows);
+        resize(first.cols, first.rows + 40);  // extra room for window borders
     } else {
-        qWarning("⚠️ Failed to grab initial frame for layout");
+        qWarning("⚠️ Initial frame is empty.");
     }
 }
 
-
 void MainWindow::start() {
-    QTimer::singleShot(0, this, &MainWindow::updateFrame);
+    if (!Capture::instance().isReady()) {
+        qWarning("❌ Capture not ready. Aborting start.");
+        return;
+    }
+
+    QString mode = AppConfig::instance().value("mode/type").toString();
+
+    if (mode == "image") {
+        updateFrame();  // just display once
+    } else {
+        timer->start(30);  // ~33 FPS for webcam/video
+    }
 }
 
 void MainWindow::updateFrame() {
     cv::Mat input = Capture::instance().getFrame();
-    cv::Mat output = Processor::instance().process(input);
 
-    if (output.empty()) return;
+    if (input.empty()) {
+        qWarning("⚠️ Frame is empty.");
+        return;
+    }
 
-    cv::cvtColor(output, output, cv::COLOR_BGR2RGB);
-    QImage img(output.data, output.cols, output.rows, output.step, QImage::Format_RGB888);
+    cv::Mat processed = Processor::instance().process(input);
+    if (processed.empty()) return;
+
+    cv::cvtColor(processed, processed, cv::COLOR_BGR2RGB);  // Qt needs RGB
+
+    QImage img(processed.data, processed.cols, processed.rows, processed.step, QImage::Format_RGB888);
     videoLabel->setPixmap(QPixmap::fromImage(img));
-    QTimer::singleShot(0, this, &MainWindow::updateFrame);
 }

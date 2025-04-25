@@ -7,19 +7,20 @@ class Capture {
 public:
     static Capture& instance();
 
-    bool initialize();             // Initializes based on config
-    bool isReady() const;         // Whether media is opened/loaded
-    cv::Mat getFrame();           // Returns current or next frame
+    bool initialize();
+    bool isReady() const;
+    cv::Mat getFrame();
 
 private:
-    Capture();                    // Singleton - private constructor
+    Capture(); // private constructor for singleton
 
     QString mode;
     QString path;
     bool loop = false;
     int cameraId = 0;
 
-    cv::VideoCapture cap;
-    cv::Mat image;
     bool ready = false;
+
+    cv::VideoCapture cap;   // used for video/webcam
+    cv::Mat image;          // used for static image
 };

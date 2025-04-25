@@ -3,21 +3,22 @@
 #include <QMainWindow>
 #include <QLabel>
 #include <QTimer>
-#include <QVBoxLayout>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
     static MainWindow& instance();
-    void initialize();             // Call after Capture/Processor initialized
-    void start();                  // Starts the processing loop
+
+    void initialize();
+    void start();
 
 private slots:
     void updateFrame();
 
 private:
     MainWindow(QWidget *parent = nullptr);
+
     QLabel* videoLabel;
-    QTimer* timer;
+    QTimer* timer = nullptr;  // Timer is still used for webcam/video modes
 };
