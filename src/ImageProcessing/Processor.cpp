@@ -9,6 +9,21 @@ Processor::Processor() {
     bilateralFilterDiameter = AppConfig::instance().get_bilateralFilterDiameter();
     bilateralFilterSigmaColor = AppConfig::instance().get_bilateralFilterSigmaColor();
     bilateralFilterSigmaSpace = AppConfig::instance().get_bilateralFilterSigmaSpace();
+
+    // Load YOLO class names
+    std::ifstream ifs("Resources/models/yolo/coco.names");
+    std::string line;
+    while (std::getline(ifs, line)) {
+        yoloClassNames.push_back(line);
+    }
+
+    // Load YOLO model
+    yoloNet = cv::dnn::readNetFromDarknet(
+        "Resources/models/yolo/yolov4-tiny.cfg",
+        "Resources/models/yolo/yolov4-tiny.weights"
+    );
+    yoloNet.setPreferableBackend(cv::dnn::DNN_BACKEND_OPENCV);
+    yoloNet.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
 }
 
 Processor& Processor::instance() {
@@ -47,5 +62,45 @@ cv::Mat Processor::process(const cv::Mat& input) {
     cv::merge(labChannels, lab);
     cv::cvtColor(lab, output, cv::COLOR_Lab2BGR);
 
+     // Call the new detectHumans function
+     detectHumans(output);
+
+
+
     return output;
+}
+
+// Add this new function to handle YOLO human detection
+void Processor::detectHumans(cv::Mat& output) {
+    // YOLO Input Blob
+    cv::Mat blob;
+    cv::dnn::blobFromImage(output, blob, 1 / 255.0, cv::Size(416, 416), cv::Scalar(), true, false);
+    yoloNet.setInput(blob);
+
+    std::vector<cv::Mat> outputs;
+    yoloNet.forward(outputs, yoloNet.getUnconnectedOutLayersNames());
+
+    float confThreshold = 0.5;
+    for (const auto& yoloOutput : outputs) {
+        for (int i = 0; i < yoloOutput.rows; i++) {
+            const float* data = yoloOutput.ptr<float>(i);
+            float confidence = data[4];
+            if (confidence > confThreshold) {
+                int classId = std::max_element(data + 5, data + yoloOutput.cols) - (data + 5);
+                float classScore = data[5 + classId];
+                if (classScore > confThreshold && yoloClassNames[classId] == "person") {
+                    int centerX = static_cast<int>(data[0] * output.cols);
+                    int centerY = static_cast<int>(data[1] * output.rows);
+                    int width = static_cast<int>(data[2] * output.cols);
+                    int height = static_cast<int>(data[3] * output.rows);
+                    int left = centerX - width / 2;
+                    int top = centerY - height / 2;
+
+                    cv::rectangle(output, cv::Rect(left, top, width, height), cv::Scalar(0, 255, 0), 2);
+                    cv::putText(output, "Human", cv::Point(left, top - 10),
+                                cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 2);
+                }
+            }
+        }
+    }
 }

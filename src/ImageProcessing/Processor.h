@@ -1,6 +1,8 @@
 #pragma once
 
 #include <opencv2/opencv.hpp>
+#include <opencv2/dnn.hpp>
+#include <fstream>
 
 class Processor {
 public:
@@ -12,6 +14,8 @@ public:
 private:
     Processor();                   // Singleton pattern
 
+    void detectHumans(cv::Mat& output);
+
     float confidenceThreshold = 0.5f;
     
     float claheClipLimit = 2.0f;
@@ -21,5 +25,6 @@ private:
     double bilateralFilterSigmaColor = 75.0;
     double bilateralFilterSigmaSpace = 75.0;
 
-    // You can later add model objects (e.g., cv::dnn::Net)
+    cv::dnn::Net yoloNet;
+    std::vector<std::string> yoloClassNames;
 };
