@@ -11,6 +11,10 @@ public:
     void initialize();             // Setup any models, parameters
     cv::Mat process(const cv::Mat& input);  // Apply processing and return output
 
+    void setApplyClahe(bool on);
+    void setApplyBilateral(bool on);
+    void setApplyYolo(bool on);
+
 private:
     Processor();                   // Singleton pattern
 
@@ -27,4 +31,8 @@ private:
 
     cv::dnn::Net yoloNet;
     std::vector<std::string> yoloClassNames;
+
+    bool applyCLAHE = true;
+    bool applyBilateral = true;
+    bool applyYOLO = true;
 };

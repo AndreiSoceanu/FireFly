@@ -2,6 +2,9 @@
 #include "AppConfig.h"
 #include <QDebug>
 
+#define YOLO_CFG "Resources/models/yolo/yolov4-tiny.cfg"
+#define YOLO_WGH "Resources/models/yolo/yolov4-tiny.weights"
+
 Processor::Processor() {
     confidenceThreshold = AppConfig::instance().get_confidenceThreshold();
     claheClipLimit = AppConfig::instance().get_claheClipLimit();
@@ -19,8 +22,8 @@ Processor::Processor() {
 
     // Load YOLO model
     yoloNet = cv::dnn::readNetFromDarknet(
-        "Resources/models/yolo/yolov4-tiny.cfg",
-        "Resources/models/yolo/yolov4-tiny.weights"
+        YOLO_CFG,
+        YOLO_WGH
     );
     yoloNet.setPreferableBackend(cv::dnn::DNN_BACKEND_OPENCV);
     yoloNet.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
@@ -49,28 +52,31 @@ cv::Mat Processor::process(const cv::Mat& input) {
     cv::split(lab, labChannels);
     
     // Apply CLAHE to the L (lightness) channel
-    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(claheClipLimit, cv::Size(claheTileGridSize, claheTileGridSize));
-    clahe->apply(labChannels[0], labChannels[0]);
+    if(applyCLAHE){
+        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(claheClipLimit, cv::Size(claheTileGridSize, claheTileGridSize));
+        clahe->apply(labChannels[0], labChannels[0]);
+    }
+    
     // Apply bilateral filter to the L (lightness) channel
-    cv::Mat filteredL;
-    cv::bilateralFilter(labChannels[0], filteredL, bilateralFilterDiameter, bilateralFilterSigmaColor, bilateralFilterSigmaSpace);
-
-    // Merge the filtered L channel with the original A and B channels
-    labChannels[0] = filteredL;
+    if(applyBilateral){
+        cv::Mat filteredL;
+        cv::bilateralFilter(labChannels[0], filteredL, bilateralFilterDiameter, bilateralFilterSigmaColor, bilateralFilterSigmaSpace);  
+        // Merge the filtered L channel with the original A and B channels
+        labChannels[0] = filteredL;  
+    }
 
     // Merge and convert back to BGR
     cv::merge(labChannels, lab);
     cv::cvtColor(lab, output, cv::COLOR_Lab2BGR);
 
      // Call the new detectHumans function
-     detectHumans(output);
-
-
+     if(applyYOLO){
+        detectHumans(output);
+     }
 
     return output;
 }
 
-// Add this new function to handle YOLO human detection
 void Processor::detectHumans(cv::Mat& output) {
     // YOLO Input Blob
     cv::Mat blob;
@@ -103,4 +109,16 @@ void Processor::detectHumans(cv::Mat& output) {
             }
         }
     }
+}
+
+void Processor::setApplyClahe(bool on){
+    applyCLAHE = on;
+}
+
+void Processor::setApplyBilateral(bool on){
+    applyBilateral = on;
+}
+
+void Processor::setApplyYolo(bool on){
+    applyYOLO = on;
 }

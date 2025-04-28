@@ -9,7 +9,10 @@
 #include <QPixmap>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), videoLabel(new QLabel(this)), timer(new QTimer(this))
+    : QMainWindow(parent), videoLabel(new QLabel(this)), timer(new QTimer(this)),
+      claheCheckBox(new QCheckBox("Apply CLAHE", this)),
+      bilateralCheckBox(new QCheckBox("Apply Bilateral Filter", this)),
+      yoloCheckBox(new QCheckBox("Apply YOLO Detection", this))
 {
     setWindowTitle("FireFly");
 
@@ -19,9 +22,22 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget* central = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(central);
     layout->addWidget(videoLabel);
+    layout->addWidget(claheCheckBox);
+    layout->addWidget(bilateralCheckBox);
+    layout->addWidget(yoloCheckBox);
     setCentralWidget(central);
 
     connect(timer, &QTimer::timeout, this, &MainWindow::updateFrame);
+    // CONNECT CHECKBOXES TO SLOTS
+    connect(claheCheckBox, &QCheckBox::checkStateChanged, this, &MainWindow::toggleCLAHE);
+    connect(bilateralCheckBox, &QCheckBox::checkStateChanged, this, &MainWindow::toggleBilateral);
+    connect(yoloCheckBox, &QCheckBox::checkStateChanged, this, &MainWindow::toggleYOLO);
+
+    // Set initial states (all ON)
+    claheCheckBox->setChecked(true);
+    bilateralCheckBox->setChecked(true);
+    yoloCheckBox->setChecked(true);
+
 }
 
 MainWindow& MainWindow::instance() {
@@ -76,3 +92,19 @@ void MainWindow::updateFrame() {
     QImage img(processed.data, processed.cols, processed.rows, processed.step, QImage::Format_RGB888);
     videoLabel->setPixmap(QPixmap::fromImage(img));
 }
+
+void MainWindow::toggleCLAHE(int state) {
+    bool enabled = (state == Qt::Checked);
+    Processor::instance().setApplyClahe(enabled);
+}
+
+void MainWindow::toggleBilateral(int state) {
+    bool enabled = (state == Qt::Checked);
+    Processor::instance().setApplyBilateral(enabled);
+}
+
+void MainWindow::toggleYOLO(int state) {
+    bool enabled = (state == Qt::Checked);
+    Processor::instance().setApplyYolo(enabled);
+}
+
