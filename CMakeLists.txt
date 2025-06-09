@@ -16,6 +16,8 @@ find_package(OpenCV REQUIRED)
 
 # Add subdirectories
 add_subdirectory(src)
+# Add tests
+add_subdirectory(tests)
 
 # Create main app executable
 add_executable(FireFlyApp src/Core/main.cpp)

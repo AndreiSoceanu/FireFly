@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Ensure the script stops on error
+set -e
+
+# Run the test binary
+echo "[RUN] Running AppTests..."
+./build/tests/AppTests

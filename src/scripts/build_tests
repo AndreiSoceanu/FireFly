@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+echo "🔄 Cleaning build directory..."
+rm -rf build
+
+echo "🛠️  Configuring CMake..."
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+
+echo "🔨 Building project..."
+cmake --build build
+
+echo "🚦 Running tests..."
+cd build
+ctest --output-on-failure
