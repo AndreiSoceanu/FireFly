@@ -7,13 +7,13 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 include(GoogleTest)
-gtest_discover_tests(AppTests)
+
 
 
 add_executable(AppTests
     test_AppConfig.cpp
 )
-
+gtest_discover_tests(AppTests)
 target_link_libraries(AppTests
     gtest
     Core
