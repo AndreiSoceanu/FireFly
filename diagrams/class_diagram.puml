@@ -1,0 +1,58 @@
+@startuml
+
+' Optional: use skinparam to make it prettier
+skinparam classAttributeIconSize 0
+
+' Example classes
+class AppConfig {
+    +get_width(): int
+    +get_height(): int
+    +get_cameraId(): int
+    +get_confidenceThreshold(): double
+    +get_claheClipLimit(): double
+    +get_claheTileGridSize(): int
+    +get_bilateralFilterDiameter(): int
+    +get_bilateralFilterSigmaColor(): int
+    +get_bilateralFilterSigmaSpace(): int
+    +settings: QSettings
+}
+
+class Capture {
+    +initialize(): bool
+    +isReady(): bool
+    +getFrame(): cv::Mat
+    +cameraId: int
+    +width: int
+    +height: int
+    +cap: VideoCapture
+    +image: cv::Mat
+}
+
+class Processor {
+    +initialize()
+    +process(input: cv::Mat): cv::Mat
+    +setApplyClahe(on: bool)
+    +setApplyBilateral(on: bool)
+    +setApplyYolo(on: bool)
+}
+
+class MainWindow {
+    +initialize()
+    +start()
+    +updateFrame()
+    +toggleCLAHE(on: bool)
+    +toggleBilateral(on: bool)
+    +toggleYOLO(on: bool)
+    +claheCheckBox: QCheckBox*
+    +bilateralCheckBox: QCheckBox*
+    +yoloCheckBox: QCheckBox*
+    +timer: QTimer*
+}
+
+MainWindow --> Processor : uses
+MainWindow --> AppConfig : uses
+MainWindow --> Capture : uses
+Capture --> AppConfig : uses
+Processor --> AppConfig : uses
+
+@enduml

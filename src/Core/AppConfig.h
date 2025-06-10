@@ -7,8 +7,6 @@ class AppConfig {
 public:
     static AppConfig& instance();
 
-    void load();
-
     QVariant value(const QString& key, const QVariant& defaultValue = {}) const;
 
     QString get_mode() const;

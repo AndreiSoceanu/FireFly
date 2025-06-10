@@ -40,10 +40,6 @@ AppConfig& AppConfig::instance() {
     return instance;
 }
 
-void AppConfig::load() {
-    // Future: trigger reloading manually if needed
-}
-
 QVariant AppConfig::value(const QString& key, const QVariant& defaultValue) const {
     return settings.value(key, defaultValue);
 }

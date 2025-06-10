@@ -20,3 +20,5 @@ Makefile
 # Model weights (if ever added)
 Resources/models/**/*.weights
 Resources/
+
+cppcheck-report.txt
