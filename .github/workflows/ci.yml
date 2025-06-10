@@ -1,0 +1,39 @@
+name: CI - GTest
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake g++ libopencv-dev libqt6widgets6 libqt6svg6-dev qt6-base-dev
+        sudo apt install -y libgtest-dev
+        cd /usr/src/gtest
+        sudo cmake .
+        sudo make
+        sudo cp lib/*.a /usr/lib
+
+    - name: Configure project
+      run: cmake -S . -B build
+
+    - name: Build project
+      run: cmake --build build
+
+    - name: Run tests
+      run: |
+        if [ -f build/tests/AppTests ]; then
+          ./build/tests/AppTests
+        else
+          echo "Test binary not found!" && exit 1
+        fi
