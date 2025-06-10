@@ -7,24 +7,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Install Qt 6
-      uses: jurplel/install-qt-action@v3
-      with:
-        version: 6.7.0
+      - name: Install Qt 6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 6.7.0
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake g++ libgl1-mesa-dev libopencv-dev ninja-build
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build libgl1-mesa-dev libxkbcommon-x11-0 libopencv-dev
 
-    - name: Configure project
-      run: cmake -S . -B build -G Ninja -DCMAKE_PREFIX_PATH=$Qt6_DIR
+      - name: Configure CMake
+        run: cmake -S . -B build -G Ninja -DCMAKE_PREFIX_PATH=$Qt6_DIR
 
-    - name: Build
-      run: cmake --build build
+      - name: Build
+        run: cmake --build build
 
-    - name: Run tests
-      run: ./build/tests/AppTests
+      - name: Run Tests
+        run: ./build/tests/AppTests
