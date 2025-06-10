@@ -18,10 +18,10 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake g++ libgl1-mesa-dev libopencv-dev
+        sudo apt-get install -y cmake g++ libgl1-mesa-dev libopencv-dev ninja-build
 
-    - name: Configure CMake
-      run: cmake -S . -B build -DCMAKE_PREFIX_PATH=$Qt6_DIR
+    - name: Configure project
+      run: cmake -S . -B build -G Ninja -DCMAKE_PREFIX_PATH=$Qt6_DIR
 
     - name: Build
       run: cmake --build build
