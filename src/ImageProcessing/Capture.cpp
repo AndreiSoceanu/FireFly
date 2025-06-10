@@ -56,7 +56,7 @@ bool Capture::initialize() {
         }
 
         if (!cap.isOpened()) {
-            qWarning() << "❌ Failed to open webcam";
+            qWarning() << "❌ Failed to open webcam!!!";
             ready = false;
         } else {
             ready = true;
@@ -79,7 +79,7 @@ cv::Mat Capture::getFrame() {
     if (!ready) return {};
 
     if (mode == "image") {
-        return image.clone();  // always return a copy
+        return image.clone(); 
     }
 
     if (mode == "video" || mode == "webcam") {
