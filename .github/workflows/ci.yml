@@ -1,39 +1,28 @@
-name: CI - GTest
+name: Build and Test
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y cmake g++ libopencv-dev libqt6widgets6 libqt6svg6-dev qt6-base-dev
-        sudo apt install -y libgtest-dev
-        cd /usr/src/gtest
-        sudo cmake .
-        sudo make
-        sudo cp lib/*.a /usr/lib
+    - name: Install Qt 6.7
+      uses: miurahr/setup-qt@v2
+      with:
+        version: '6.7.0'
 
-    - name: Configure project
-      run: cmake -S . -B build
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y cmake g++ libgl1-mesa-dev
+
+    - name: Create build directory
+      run: cmake -S . -B build -DCMAKE_PREFIX_PATH=$Qt6_DIR
 
     - name: Build project
       run: cmake --build build
 
     - name: Run tests
-      run: |
-        if [ -f build/tests/AppTests ]; then
-          ./build/tests/AppTests
-        else
-          echo "Test binary not found!" && exit 1
-        fi
+      run: ./build/tests/AppTests
